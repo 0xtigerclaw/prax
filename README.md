@@ -2,7 +2,7 @@
 
 A tokenized marketplace for AI compute credits — settled on Solana devnet.
 
-**Live:** [https://prax.vercel.app](https://prax.vercel.app) (placeholder)  
+**Live:** [https://computefi.vercel.app](https://computefi.vercel.app)  
 **Contract:** [NcrmnMRfv3fZaqND9P6XtiXhf1dKo6kt2rC3umtRsuH](https://explorer.solana.com/address/NcrmnMRfv3fZaqND9P6XtiXhf1dKo6kt2rC3umtRsuH?cluster=devnet)
 
 ---
