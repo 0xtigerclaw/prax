@@ -1,26 +1,272 @@
 @import "tailwindcss";
 
+/* ────────────────────────────────────────────────────────────────
+   Prax — Light beige · Bloomberg × muji × Stripe
+   ──────────────────────────────────────────────────────────────── */
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Warm cream page → parchment → sand surfaces */
+  --bg-0: #f5efe4;   /* app background — warm cream */
+  --bg-1: #efe7d6;   /* panel — parchment */
+  --bg-2: #e8dfc9;   /* elevated panel — light sand */
+  --bg-3: #ddd1b4;   /* hover / row — sand */
+  --bg-4: #d1c29c;   /* deeper sand */
+
+  /* Hairlines */
+  --line: #d8cbae;   /* primary hairline */
+  --line-2: #c8b892; /* stronger hairline */
+
+  /* Espresso text stack */
+  --text-0: #2a2218; /* primary — espresso */
+  --text-1: #5c503d; /* secondary — walnut */
+  --text-2: #8b7d65; /* tertiary / axis — muted walnut */
+  --text-3: #b2a586; /* disabled / hint */
+
+  /* Market semantics — tuned for readable contrast on cream */
+  --bid: #2f7d4f;       /* forest green (bids / positive) */
+  --bid-dim: rgba(47, 125, 79, 0.14);
+  --ask: #b55d16;       /* burnt orange (asks / warnings) */
+  --ask-dim: rgba(181, 93, 22, 0.14);
+  --warn: #b42318;      /* deep red */
+  --sol: #7a3ecf;       /* muted solana purple */
+  --usdc: #2566a8;      /* muted usdc blue */
+  --grid: rgba(91, 80, 61, 0.06);
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-bg-0: var(--bg-0);
+  --color-bg-1: var(--bg-1);
+  --color-bg-2: var(--bg-2);
+  --color-bg-3: var(--bg-3);
+  --color-bg-4: var(--bg-4);
+  --color-line: var(--line);
+  --color-line-2: var(--line-2);
+  --color-text-0: var(--text-0);
+  --color-text-1: var(--text-1);
+  --color-text-2: var(--text-2);
+  --color-text-3: var(--text-3);
+  --color-bid: var(--bid);
+  --color-bid-dim: var(--bid-dim);
+  --color-ask: var(--ask);
+  --color-ask-dim: var(--ask-dim);
+  --color-warn: var(--warn);
+  --color-sol: var(--sol);
+  --color-usdc: var(--usdc);
+
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-mono: var(--font-jetbrains), ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+*,
+*::before,
+*::after {
+  border-color: var(--line);
+}
+
+html,
+body {
+  background: var(--bg-0);
+  color: var(--text-0);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  font-feature-settings: "ss01", "cv11";
+}
+
+/* Selection */
+::selection {
+  background: var(--bid-dim);
+  color: var(--bid);
+}
+
+/* Scrollbar */
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+*::-webkit-scrollbar-thumb {
+  background: var(--line);
+  border-radius: 10px;
+  border: 2px solid var(--bg-0);
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--line-2);
+}
+
+/* ──────── Utilities ──────── */
+@utility mono {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "zero", "ss01";
+}
+
+@utility tab-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+@utility hairline {
+  border: 1px solid var(--line);
+}
+
+@utility hairline-t {
+  border-top: 1px solid var(--line);
+}
+@utility hairline-b {
+  border-bottom: 1px solid var(--line);
+}
+@utility hairline-l {
+  border-left: 1px solid var(--line);
+}
+@utility hairline-r {
+  border-right: 1px solid var(--line);
+}
+
+@utility panel {
+  background: var(--bg-1);
+  border: 1px solid var(--line);
+}
+
+@utility panel-2 {
+  background: var(--bg-2);
+  border: 1px solid var(--line);
+}
+
+/* Dotted grid background */
+@utility grid-bg {
+  background-image: radial-gradient(
+    circle at 1px 1px,
+    rgba(91, 80, 61, 0.12) 1px,
+    transparent 0
+  );
+  background-size: 24px 24px;
+}
+
+/* Terminal cursor */
+@utility cursor-blink {
+  display: inline-block;
+  width: 0.5ch;
+  height: 1em;
+  vertical-align: -0.1em;
+  background: var(--bid);
+  animation: blink 1.1s steps(2, jump-none) infinite;
+}
+
+@keyframes blink {
+  0%,
+  50% {
+    opacity: 1;
+  }
+  51%,
+  100% {
+    opacity: 0;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* Ticker marquee */
+@keyframes marquee {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+@utility animate-marquee {
+  animation: marquee 55s linear infinite;
+}
+
+/* Price flash */
+@keyframes flash-bid {
+  0% {
+    background-color: var(--bid-dim);
+  }
+  100% {
+    background-color: transparent;
+  }
+}
+@keyframes flash-ask {
+  0% {
+    background-color: var(--ask-dim);
+  }
+  100% {
+    background-color: transparent;
+  }
+}
+@utility flash-bid {
+  animation: flash-bid 0.6s ease-out;
+}
+@utility flash-ask {
+  animation: flash-ask 0.6s ease-out;
+}
+
+/* Dashed path draw */
+@keyframes dash-flow {
+  to {
+    stroke-dashoffset: -40;
+  }
+}
+@utility animate-dash {
+  stroke-dasharray: 4 4;
+  animation: dash-flow 1.2s linear infinite;
+}
+
+/* Hero radial gradient — warm highlights on cream */
+@utility hero-glow {
+  background:
+    radial-gradient(
+      ellipse 80% 60% at 30% 0%,
+      rgba(47, 125, 79, 0.10),
+      transparent 60%
+    ),
+    radial-gradient(
+      ellipse 60% 50% at 80% 10%,
+      rgba(181, 93, 22, 0.09),
+      transparent 60%
+    );
+}
+
+/* Glass card — warm translucent on beige */
+@utility glass {
+  background: rgba(255, 250, 239, 0.55);
+  backdrop-filter: blur(24px) saturate(1.2);
+  -webkit-backdrop-filter: blur(24px) saturate(1.2);
+  border: 1px solid rgba(91, 80, 61, 0.14);
+}
+
+/* Delta arrow colors */
+@utility delta-up {
+  color: var(--bid);
+}
+@utility delta-down {
+  color: var(--ask);
+}
+
+/* Focus ring */
+*:focus-visible {
+  outline: 2px solid var(--bid);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* Kbd */
+@utility kbd {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  padding: 2px 6px;
+  background: var(--bg-2);
+  border: 1px solid var(--line);
+  border-bottom-width: 2px;
+  border-radius: 4px;
+  color: var(--text-1);
+  line-height: 1;
+}
+
+/* Hide scrollbar when needed */
+@utility no-scrollbar {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
 }

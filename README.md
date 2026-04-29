@@ -1,36 +1,81 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Prax
 
-## Getting Started
+A tokenized marketplace for AI compute credits — settled on Solana devnet.
 
-First, run the development server:
+> **Hybrid demo + devnet.** Dutch auctions are real on Solana devnet with
+> wallet-adapter signing. Exchange quotes, market data, and stats are modeled
+> frontend previews until backend swap endpoints are connected.
+
+## Screens
+
+| Route       | Description                                                        |
+| ----------- | ------------------------------------------------------------------ |
+| `/`         | Landing — hero, ticker, featured Dutch auctions, stats             |
+| `/exchange` | Buyer spot quote — preview-only credit pricing (primary buyer flow)|
+| `/market`   | Advanced terminal — candles, orderbook, trade panel, portfolio     |
+| `/list`     | Listing flow — 4-step wizard: provider → attest → escrow → publish |
+| `/route`    | Routing aggregator — compare direct / secondary / auction / alt    |
+
+## Keyboard
+
+- `⌘K` / `Ctrl+K` — command palette
+- `/` — command palette (when not in input)
+- `B` — set trade panel to Buy (on `/market`)
+- `S` — set trade panel to Sell (on `/market`)
+
+## Stack
+
+- Next.js 16 (App Router, Turbopack) · React 19 · TypeScript
+- Tailwind v4 (CSS-first `@theme`) · hand-rolled primitives
+- Recharts · framer-motion · lucide-react · sonner
+- `@solana/wallet-adapter-react` (Phantom, Solflare) · Anchor · Token-2022
+- `next/font` for Inter + JetBrains Mono
+
+Exchange quotes and market surfaces use modeled client-side data. Dutch
+auctions interact with a real devnet Anchor program (`NcrmnMRfv3fZaqND9P6XtiXhf1dKo6kt2rC3umtRsuH`).
+
+## Run
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
+pnpm install
 pnpm dev
-# or
-bun dev
+# http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Build
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+pnpm build
+pnpm start
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Project structure
 
-## Learn More
+```
+app/
+  page.tsx              # Landing
+  exchange/page.tsx     # Buyer spot quote (preview-only)
+  market/page.tsx       # Advanced terminal
+  list/page.tsx         # Listing wizard
+  route/page.tsx        # Routing aggregator
+  layout.tsx            # Fonts, toaster, command palette, wallet provider
+  globals.css           # Design tokens, utilities
 
-To learn more about Next.js, take a look at the following resources:
+components/
+  landing/              # Hero, HowItWorks, FeaturedAuctions, StatsBand, CTAFooter
+  shell/                # Sidebar, TopBar, MarketTicker, WalletConnect, CommandPalette
+  market/               # MarketHeader, PriceChart, OrderBook, TradePanel, DutchAuctionPanel, PortfolioPanel, CreditListingsTable
+  listing/              # StepIndicator, SelectProvider, ProofOfBalance, DepositEscrow, ListingForm, SettlementStatus
+  routing/              # ComputeRequestForm, RouteComparison, ExecutionPath
+  ui/                   # Button, Panel, Dialog, Input, Tabs, Badge, Select, Slider, MountedOnly
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+lib/
+  exchange/quotes.ts    # Shared quote math for the exchange page
+  mock/                 # Seeded data generators (orderbook, candles, listings, pools, tickers, portfolio, routes)
+  hooks/                # useLiveFeed, useWallet, useCountdown
+  solana/               # wallet-adapter provider, Anchor client, IDL, config
+  format.ts             # Number/addr/time formatters + mulberry32 PRNG
+  utils.ts              # cn()
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+public/logos/           # Provider SVG marks
+```

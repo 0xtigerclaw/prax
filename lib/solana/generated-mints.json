@@ -1,0 +1,14 @@
+{
+  "cluster": "devnet",
+  "usdc": "4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU",
+  "credits": {
+    "llama": "DM1Pi42AkC7ciy3jemcGraqw4gFuRe4cwtJ2d8J6i3JV",
+    "gpu-llama70b": "9ScZLEsdKdquvDQDicS3FG2Jx1TAutorQ7EvkHnNCqGj",
+    "mistral": "C3gQKaQtbhTP2C6HNkyqWA46o4RtZcdqFv3pg2bBksgx",
+    "gpt4o": "6eTeHapNo38LipiRz3rSbF2U5xqHocD9KZJ5K4FSVC4b",
+    "claude": "5raKhAQANJozLRhuJuf3KbGjhPfnZe38huWbktHdUK4c",
+    "gemini": "Ci1iREZErkM7PTHucZYmuFpEpQW6RcPnxiaaPUiwyYiW",
+    "cohere": "B4UYhPHDfGpKySDEjZTmrNhApXkMxZmGQHdEq4DVAeUA"
+  },
+  "generatedAt": "2026-04-28T19:36:40.203Z"
+}
