@@ -2,11 +2,10 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
-import { ArrowDown, ArrowUp } from "lucide-react";
+import { ArrowUp } from "lucide-react";
 import { jitterOrderBook, makeOrderBook } from "@/lib/mock/orderbook";
 import { useLiveFeed } from "@/lib/hooks/useLiveFeed";
 import { fmtPrice } from "@/lib/format";
-import { cn } from "@/lib/utils";
 
 export function HeroOrderbook() {
   const seed = 42;
@@ -24,7 +23,8 @@ export function HeroOrderbook() {
   // Slot suffix is client-only to avoid hydration mismatch.
   const [slotSuffix, setSlotSuffix] = useState(0);
   useEffect(() => {
-    setSlotSuffix(Math.floor(Math.random() * 999));
+    const id = setTimeout(() => setSlotSuffix(Math.floor(Math.random() * 999)), 0);
+    return () => clearTimeout(id);
   }, []);
 
   const maxSize = Math.max(
@@ -57,7 +57,7 @@ export function HeroOrderbook() {
 
       <div className="grid grid-cols-3 text-[9.5px] uppercase tracking-[0.08em] text-text-2 mono px-4 h-6 items-center hairline-b bg-bg-0/20">
         <span>Price</span>
-        <span className="text-right">Size (1K)</span>
+        <span className="text-right">Credits</span>
         <span className="text-right">Total</span>
       </div>
 

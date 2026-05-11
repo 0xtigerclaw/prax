@@ -14,7 +14,10 @@ export function useLiveFeed<T>(
 ): T {
   const [state, setState] = useState<T>(initial);
   const updateRef = useRef(update);
-  updateRef.current = update;
+
+  useEffect(() => {
+    updateRef.current = update;
+  }, [update]);
 
   useEffect(() => {
     if (!enabled) return;
@@ -38,7 +41,10 @@ export function useLiveFeedEager<T>(
 ): T {
   const [state, setState] = useState<T>(initial);
   const updateRef = useRef(update);
-  updateRef.current = update;
+
+  useEffect(() => {
+    updateRef.current = update;
+  }, [update]);
 
   useEffect(() => {
     // First tick after a short delay to avoid hydration diff
@@ -61,9 +67,13 @@ export function useLiveFeedEager<T>(
 export function useNow(intervalMs = 1000): number {
   const [now, setNow] = useState<number>(() => 0); // 0 = pre-hydration sentinel
   useEffect(() => {
-    setNow(Date.now());
-    const id = setInterval(() => setNow(Date.now()), intervalMs);
-    return () => clearInterval(id);
+    const tick = () => setNow(Date.now());
+    const kick = setTimeout(tick, 0);
+    const id = setInterval(tick, intervalMs);
+    return () => {
+      clearTimeout(kick);
+      clearInterval(id);
+    };
   }, [intervalMs]);
   return now;
 }

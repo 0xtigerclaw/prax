@@ -5,9 +5,9 @@ export type Listing = {
   id: string;
   provider: Provider;
   kind: "fixed" | "auction";
-  credits: number; // in 1K token units
+  credits: number; // normalized credits; 1 credit = 1K billable token-equivalent units
   expiry: number; // ms timestamp
-  price: number; // current $ per 1K tokens
+  price: number; // current $ per credit
   startPrice?: number;
   floorPrice?: number;
   discount: number; // 0..1
@@ -59,7 +59,7 @@ export function makeListings(seed: number, count = 24): Listing[] {
 }
 
 /** Decay Dutch auction prices towards floor */
-export function decayAuctions(listings: Listing[], dt: number): Listing[] {
+export function decayAuctions(listings: Listing[]): Listing[] {
   return listings.map((l) => {
     if (l.kind !== "auction" || l.floorPrice == null || l.startPrice == null)
       return l;

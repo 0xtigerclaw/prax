@@ -7,7 +7,6 @@ import {
 } from "@solana/wallet-adapter-react";
 import {
   Connection,
-  PublicKey,
   Transaction,
   type TransactionInstruction,
 } from "@solana/web3.js";

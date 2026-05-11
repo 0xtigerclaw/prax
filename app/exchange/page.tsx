@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useMemo, useEffect } from "react";
+import { useState, useMemo } from "react";
 import Image from "next/image";
 import { Wallet, AlertCircle, ChevronDown } from "lucide-react";
 import { toast } from "sonner";
@@ -20,7 +20,6 @@ import {
 export default function ExchangePage() {
   const { connected, publicKey, login } = usePraxWallet();
   const [payAmount, setPayAmount] = useState("100");
-  const [receiveAmount, setReceiveAmount] = useState("");
   const [previewing, setPreviewing] = useState(false);
   const [selectedId, setSelectedId] = useState("claude");
   const [payToken, setPayToken] = useState<PayToken>("usdc");
@@ -36,30 +35,27 @@ export default function ExchangePage() {
     [selected.id, payToken],
   );
 
-  // Precompute / keep receive amount in sync
-  const syncReceive = useCallback(
-    (payVal: string) => {
-      const n = parseFloat(payVal);
-      if (!Number.isNaN(n) && n > 0) {
-        setReceiveAmount(getCreditQuote({ payToken, payAmount: n, providerId: selected.id }).toFixed(2));
-      } else {
-        setReceiveAmount("");
-      }
-    },
-    [payToken, selected.id],
-  );
+  const receiveAmount = useMemo(() => {
+    const n = parseFloat(payAmount);
+    if (Number.isNaN(n) || n <= 0) return "";
+    return getCreditQuote({
+      payToken,
+      payAmount: n,
+      providerId: selected.id,
+    }).toFixed(2);
+  }, [payAmount, payToken, selected.id]);
 
-  useEffect(() => {
-    syncReceive(payAmount);
-  }, [payToken, selected.id, syncReceive]);
+  const payAmountPreview = useMemo(
+    () => parseFloat(payAmount),
+    [payAmount],
+  );
 
   const handlePayChange = (val: string) => {
     setPayAmount(val);
-    syncReceive(val);
   };
 
   const handlePreview = async () => {
-    const pay = parseFloat(payAmount);
+    const pay = payAmountPreview;
     const rec = parseFloat(receiveAmount);
     if (!pay || pay <= 0 || !rec || rec <= 0) {
       toast.error("Enter a valid amount");
@@ -173,7 +169,7 @@ export default function ExchangePage() {
                 />
               </div>
               <div className="text-[11px] text-text-2">
-                ≈ {payAmount ? parseFloat(payAmount).toFixed(payToken === "sol" ? 4 : 2) : "0.00"} {payToken.toUpperCase()}
+                  ≈ {!Number.isNaN(payAmountPreview) ? payAmountPreview.toFixed(payToken === "sol" ? 4 : 2) : "0.00"} {payToken.toUpperCase()}
               </div>
             </div>
 

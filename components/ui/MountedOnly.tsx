@@ -11,6 +11,9 @@ export function MountedOnly({
   fallback?: React.ReactNode;
 }) {
   const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
+  useEffect(() => {
+    const id = setTimeout(() => setMounted(true), 0);
+    return () => clearTimeout(id);
+  }, []);
   return <>{mounted ? children : fallback}</>;
 }

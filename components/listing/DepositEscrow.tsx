@@ -7,7 +7,8 @@ import Image from "next/image";
 import type { Provider } from "@/lib/mock/providers";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
-import { useWallet } from "@/lib/hooks/useWallet";
+import { useWalletModal } from "@solana/wallet-adapter-react-ui";
+import { usePraxWallet } from "@/lib/solana/usePraxWallet";
 import { fmtAddr, fmtInt } from "@/lib/format";
 import { toast } from "sonner";
 
@@ -24,16 +25,18 @@ export function DepositEscrow({
   onAmount: (s: string) => void;
   onDeposited: () => void;
 }) {
-  const wallet = useWallet();
+  const wallet = usePraxWallet();
+  const { setVisible } = useWalletModal();
   const [signing, setSigning] = useState(false);
 
   const sign = async () => {
     if (!wallet.connected) {
       toast.error("Connect a wallet to continue");
+      setVisible(true);
       return;
     }
     if (!amount || parseInt(amount) <= 0) {
-      toast.error("Enter how many tokens to sell");
+      toast.error("Enter how many credits to sell");
       return;
     }
     setSigning(true);
@@ -53,7 +56,7 @@ export function DepositEscrow({
           <div>
             <div className="text-[13px] font-semibold">{provider.short}</div>
             <div className="mono text-[11px] text-text-2 mt-0.5">
-              available {fmtInt(balance)} tokens
+              available {fmtInt(balance)} credits
             </div>
           </div>
           <div className="flex-1" />
@@ -65,7 +68,7 @@ export function DepositEscrow({
         <div className="grid grid-cols-[1fr_auto_1fr] gap-4 items-end">
           <div>
             <div className="mono text-[10.5px] uppercase tracking-wider text-text-2 mb-1.5">
-              How much to sell (tokens)
+              How much to sell (credits)
             </div>
             <Input
               value={amount}
@@ -94,7 +97,7 @@ export function DepositEscrow({
             </div>
             <div className="h-9 px-3 rounded-[6px] bg-bid/5 border border-bid/30 flex items-center mono text-[13px] text-bid tabular-nums">
               {amount && parseInt(amount) > 0
-                ? `${(parseInt(amount) / 1000).toFixed(1)} cGPT4o`
+                ? `${fmtInt(parseInt(amount))} credits`
                 : "—"}
             </div>
           </div>
@@ -117,7 +120,7 @@ export function DepositEscrow({
         </Row>
         <Row label="Your wallet">
           <span className="mono text-text-0">
-            {wallet.pubkey ? fmtAddr(wallet.pubkey, 6, 6) : "not connected"}
+            {wallet.address ? fmtAddr(wallet.address, 6, 6) : "not connected"}
           </span>
         </Row>
         <Row label="Withdraw anytime">

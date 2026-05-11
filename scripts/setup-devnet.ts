@@ -2,7 +2,7 @@
  * Prax devnet setup.
  *
  * Creates one Token-2022 credit mint per provider in lib/mock/providers.ts,
- * mints a treasury balance (1M whole tokens, 6 decimals → 1e12 atoms) to
+ * mints a treasury balance (1M whole credits, 6 decimals -> 1e12 atoms) to
  * the deployer, and writes the resulting mint addresses to
  * lib/solana/generated-mints.json so the client can pick them up.
  *
@@ -24,7 +24,6 @@ import {
   TOKEN_2022_PROGRAM_ID,
   createInitializeMintInstruction,
   getMintLen,
-  MINT_SIZE,
   createAssociatedTokenAccountIdempotentInstruction,
   getAssociatedTokenAddressSync,
   createMintToInstruction,
@@ -34,7 +33,7 @@ import { homedir } from "node:os";
 import { join } from "node:path";
 
 const DECIMALS = 6;
-const TREASURY_MINT = 1_000_000n * 10n ** BigInt(DECIMALS); // 1M tokens
+const TREASURY_MINT = 1_000_000n * 10n ** BigInt(DECIMALS); // 1M credits
 // Circle devnet USDC
 const USDC_DEVNET_MINT = "4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU";
 
@@ -132,7 +131,7 @@ async function main() {
   console.log(
     "\nTreasury: ",
     (TREASURY_MINT / 10n ** BigInt(DECIMALS)).toString(),
-    "tokens each, in deployer ATAs",
+    "credits each, in deployer ATAs",
   );
 }
 

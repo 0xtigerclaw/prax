@@ -14,13 +14,10 @@ export function SettlementStatus({
   txSignature,
 }: {
   onReset: () => void;
-  /** Real devnet tx signature from the on-chain `create_auction` call. If
-   *  omitted, a mock hash is shown (demo fallback). */
-  txSignature?: string;
+  /** Real devnet tx signature from the on-chain `create_auction` call. */
+  txSignature: string;
 }) {
   const [confirmations, setConfirmations] = useState(0);
-  const mockHash = useMockHash();
-  const txHash = txSignature ?? mockHash;
 
   useEffect(() => {
     const id = setInterval(() => {
@@ -90,18 +87,18 @@ export function SettlementStatus({
       <div className="p-6 space-y-2 text-[12.5px]">
         <Row label="Transaction">
           <a
-            href={`https://explorer.solana.com/tx/${txHash}?cluster=devnet`}
+            href={`https://explorer.solana.com/tx/${txSignature}?cluster=devnet`}
             target="_blank"
             rel="noopener noreferrer"
             className="mono text-bid hover:underline inline-flex items-center gap-1"
           >
-            {txHash.slice(0, 10)}…{txHash.slice(-8)}
+            {txSignature.slice(0, 10)}…{txSignature.slice(-8)}
             <ExternalLink size={10} />
           </a>
         </Row>
         <Row label="Block">
           <span className="mono text-text-0 tabular-nums">
-            {done ? "312,478,591" : "pending"}
+            {done ? "confirmed" : "pending"}
           </span>
         </Row>
         <Row label="Fee">
@@ -142,15 +139,4 @@ function Row({ label, children }: { label: string; children: React.ReactNode }) 
       <span>{children}</span>
     </div>
   );
-}
-
-function useMockHash() {
-  const [h, setH] = useState("5xKXfAP93s1vRQm8f2zB8NwJ9a");
-  useEffect(() => {
-    const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
-    let out = "";
-    for (let i = 0; i < 64; i++) out += chars[Math.floor(Math.random() * chars.length)];
-    setH(out);
-  }, []);
-  return h;
 }

@@ -4,7 +4,7 @@ export type Provider = {
   short: string; // model short name for display
   model: string; // full model id
   logo: string; // /logos/*.svg
-  face: number; // face-value $ per 1K tokens
+  face: number; // face-value $ per normalized credit
   color: string; // hex for charts
   volatility: number; // 0..1
   /**
@@ -18,7 +18,7 @@ export type Provider = {
   kind: "open" | "closed";
 };
 
-/** Approximate 2026 public rates per 1K tokens (blended in/out). */
+/** Approximate 2026 public rates per normalized credit (blended in/out). */
 export const PROVIDERS: Provider[] = [
   // ── Open-source inference (GPU-producer side, fully transferable) ──
   {

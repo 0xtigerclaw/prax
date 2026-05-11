@@ -10,7 +10,6 @@ import {
   PhantomWalletAdapter,
   SolflareWalletAdapter,
 } from "@solana/wallet-adapter-wallets";
-import { clusterApiUrl } from "@solana/web3.js";
 import { DEVNET_RPC } from "./config";
 
 // Default styles that can be overridden by your app

@@ -9,6 +9,7 @@ import {
 } from "@coral-xyz/anchor";
 import {
   Connection,
+  Keypair,
   PublicKey,
   SystemProgram,
   SYSVAR_RENT_PUBKEY,
@@ -38,17 +39,16 @@ export function readOnlyConnection(): Connection {
  */
 class ReadOnlyWallet implements Wallet {
   readonly publicKey: PublicKey;
-  // biome-ignore lint/suspicious/noExplicitAny: anchor Wallet requires a payer field.
-  readonly payer: any = {};
+  readonly payer = Keypair.generate();
   constructor(publicKey?: PublicKey) {
     // Use a throwaway pubkey if none provided. Only matters if you try to
     // actually send through this Wallet — we never do.
     this.publicKey = publicKey ?? PublicKey.default;
   }
-  async signTransaction<T extends Transaction | VersionedTransaction>(tx: T): Promise<T> {
+  async signTransaction<T extends Transaction | VersionedTransaction>(): Promise<T> {
     throw new Error("ReadOnlyWallet cannot sign. Route signing via usePraxWallet().");
   }
-  async signAllTransactions<T extends Transaction | VersionedTransaction>(txs: T[]): Promise<T[]> {
+  async signAllTransactions<T extends Transaction | VersionedTransaction>(): Promise<T[]> {
     throw new Error("ReadOnlyWallet cannot sign. Route signing via usePraxWallet().");
   }
 }
@@ -87,8 +87,8 @@ export type CreateAuctionParams = {
   /** Random 64-bit discriminator so a seller can have many auctions. */
   auctionSeed: BN;
   creditMint: PublicKey;
-  /** Whole credits to list; will be multiplied by 10^6 atoms. */
-  creditAmountWhole: number;
+  /** Whole normalized credits to list; will be multiplied by 10^6 atoms. */
+  creditAmountCredits: number;
   /** USDC per credit at start; multiplied by 10^6 atoms. */
   startPricePerCreditUsdc: number;
   floorPricePerCreditUsdc: number;
@@ -120,7 +120,7 @@ export async function createAuctionIx(
     TOKEN_2022_PROGRAM_ID,
   );
 
-  const creditAmount = new BN(Math.round(p.creditAmountWhole * 1e6));
+  const creditAmount = new BN(Math.round(p.creditAmountCredits * 1e6));
   const startPrice = new BN(Math.round(p.startPricePerCreditUsdc * 1e6));
   const floorPrice = new BN(Math.round(p.floorPricePerCreditUsdc * 1e6));
   const duration = new BN(p.durationSecs);
@@ -268,8 +268,9 @@ export async function fetchAllAuctions(
 }
 
 /**
- * Client-side mirror of the on-chain `current_price` function. Good for
- * UI previews; the program always recomputes authoritatively.
+ * Client-side mirror of the on-chain `current_price` function. Prices are
+ * quote atoms per whole normalized credit. One whole credit represents 1K
+ * provider-normalized billable token-equivalent units.
  */
 export function currentPrice(
   a: { startPrice: BN; floorPrice: BN; startTs: BN; durationSecs: BN },

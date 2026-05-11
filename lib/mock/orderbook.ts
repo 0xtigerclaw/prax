@@ -2,7 +2,7 @@ import { clamp, gaussian, mulberry32 } from "../format";
 
 export type OrderRow = {
   price: number;
-  size: number; // 1K tokens
+  size: number; // normalized credits
   total: number; // cumulative
 };
 
@@ -79,7 +79,7 @@ export function jitterOrderBook(
   const shift = newMid - book.mid;
   const mutate = (rows: OrderRow[]): OrderRow[] => {
     let cum = 0;
-    return rows.map((r, i) => {
+    return rows.map((r) => {
       const sizeJitter = 1 + (rng() - 0.5) * 0.35;
       const size = clamp(r.size * sizeJitter, 2, 500);
       const price = r.price + shift + (rng() - 0.5) * tick * 0.3;

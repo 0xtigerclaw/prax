@@ -50,11 +50,14 @@ export function useWallet() {
 
   useEffect(() => {
     // Sync from storage after mount (avoid SSR mismatch)
-    globalState = loadFromStorage();
-    setState(globalState);
+    const id = setTimeout(() => {
+      globalState = loadFromStorage();
+      setState(globalState);
+    }, 0);
     const fn = (s: WalletState) => setState(s);
     listeners.push(fn);
     return () => {
+      clearTimeout(id);
       listeners = listeners.filter((l) => l !== fn);
     };
   }, []);

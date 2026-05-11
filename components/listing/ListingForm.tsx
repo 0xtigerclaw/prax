@@ -103,7 +103,7 @@ export function ListingForm({
 
         {kind === "fixed" ? (
           <>
-            <Field label="Ask price · USDC per 1K tokens">
+            <Field label="Ask price · USDC per credit">
               <Input
                 value={price}
                 onChange={(e) => setPrice(e.target.value)}
@@ -128,14 +128,14 @@ export function ListingForm({
         ) : (
           <>
             <div className="grid grid-cols-2 gap-3">
-              <Field label="Start at (USDC / 1K)">
+              <Field label="Start at (USDC / credit)">
                 <Input
                   value={startPrice}
                   onChange={(e) => setStartPrice(e.target.value)}
                   inputMode="decimal"
                 />
               </Field>
-              <Field label="Won't go below (USDC / 1K)">
+              <Field label="Won't go below (USDC / credit)">
                 <Input
                   value={floorPrice}
                   onChange={(e) => setFloorPrice(e.target.value)}
@@ -255,7 +255,7 @@ export function ListingForm({
 
           <div className="mb-3">
             <div className="mono text-[10.5px] uppercase tracking-wider text-text-2 mb-1">
-              {kind === "auction" ? "Starts at" : "Price"} · per 1K tokens
+              {kind === "auction" ? "Starts at" : "Price"} · per credit
             </div>
             <div className="mono text-[26px] font-medium tabular-nums">
               ${fmtPrice(kind === "auction" ? sp : parseFloat(price))}

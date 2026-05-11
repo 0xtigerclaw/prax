@@ -3,7 +3,9 @@
 // Scope (this file): happy path only.
 //   1. `create_auction` — seller escrows `credit_amount` of a Token-2022
 //      credit mint and commits (start_price, floor_price, start_ts,
-//      duration_secs). Price is measured in USDC atoms per credit atom.
+//      duration_secs). One whole credit represents 1K provider-normalized
+//      billable token-equivalent units. Price is measured in USDC atoms per
+//      whole credit.
 //   2. `place_bid` — buyer pays the *current* auction price (computed from
 //      on-chain clock, linear decay between start_price and floor_price),
 //      receives the credits, seller receives USDC. One bid fills the
@@ -102,8 +104,8 @@ pub mod prax_auction {
         let total_quote = (price_per_credit as u128)
             .checked_mul(a.credit_amount as u128)
             .ok_or(PraxError::MathOverflow)?;
-        // price is quote-atoms per credit-atom; divide by 10^credit_decimals
-        // so the buyer pays a reasonable total.
+        // price is quote-atoms per whole credit. credit_amount is stored in
+        // credit atoms, so divide by 10^credit_decimals to get whole credits.
         let credit_decimals = ctx.accounts.credit_mint.decimals as u32;
         let divisor = 10u128
             .checked_pow(credit_decimals)
@@ -406,7 +408,7 @@ pub struct Auction {
     pub credit_mint: Pubkey,
     pub quote_mint: Pubkey,
     pub credit_amount: u64,
-    pub start_price: u64, // quote atoms per 1.0 credit (i.e. per 10^decimals atoms)
+    pub start_price: u64, // quote atoms per 1.0 normalized credit
     pub floor_price: u64,
     pub start_ts: i64,
     pub duration_secs: i64,

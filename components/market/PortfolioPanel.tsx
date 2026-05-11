@@ -5,7 +5,7 @@ import { useMemo } from "react";
 import { LineChart, Line, ResponsiveContainer, YAxis } from "recharts";
 import { Panel, PanelBody, PanelHeader } from "@/components/ui/Panel";
 import { makeHoldings, makeOpenOrders } from "@/lib/mock/portfolio";
-import { useWallet } from "@/lib/hooks/useWallet";
+import { usePraxWallet } from "@/lib/solana/usePraxWallet";
 import { fmtInt, fmtPct, fmtPrice } from "@/lib/format";
 import { Badge } from "@/components/ui/Badge";
 import { cn } from "@/lib/utils";
@@ -16,7 +16,9 @@ import { CHART } from "@/lib/chartColors";
 export function PortfolioPanel() {
   const holdings = useMemo(() => makeHoldings(55), []);
   const orders = useMemo(() => makeOpenOrders(77), []);
-  const wallet = useWallet();
+  const wallet = usePraxWallet();
+  const balanceUSDC = wallet.connected ? 8421.53 : 0;
+  const balanceSOL = wallet.connected ? 12.4829 : 0;
 
   // drift mark prices to animate P&L
   const marks = useLiveFeed(
@@ -41,7 +43,7 @@ export function PortfolioPanel() {
               USDC
             </div>
             <div className="mono text-[16px] font-medium mt-1 tabular-nums">
-              {wallet.balanceUSDC.toLocaleString("en-US", {
+              {balanceUSDC.toLocaleString("en-US", {
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2,
               })}
@@ -52,7 +54,7 @@ export function PortfolioPanel() {
               SOL
             </div>
             <div className="mono text-[16px] font-medium mt-1 tabular-nums">
-              {wallet.balanceSOL.toFixed(4)}
+              {balanceSOL.toFixed(4)}
             </div>
           </div>
         </div>

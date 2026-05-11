@@ -13,7 +13,7 @@ export type Pool = {
 
 export function makePools(seed: number): Pool[] {
   const rng = mulberry32(seed);
-  return PROVIDERS.map((p, i) => {
+  return PROVIDERS.map((p) => {
     const tvl = 250_000 + rng() * 8_000_000;
     const volume24h = tvl * (0.08 + rng() * 0.6);
     const apy = 6 + rng() * 42;

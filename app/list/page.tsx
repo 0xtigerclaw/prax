@@ -56,9 +56,7 @@ export default function ListPage() {
 
   const handleSubmit = async (draft: ListingDraft) => {
     if (draft.kind !== "auction") {
-      // Fixed-price listings are still mock-only for this session.
-      setSubmitted(draft);
-      toast.success("Listing transaction submitted");
+      toast.error("Fixed-price listings are preview-only. Choose auction to publish on devnet.");
       return;
     }
 
@@ -75,13 +73,13 @@ export default function ListPage() {
       const creditMint = creditMintFor(provider.id);
       const program = getProgram(publicKey);
 
-      const creditAmountWhole = parseInt(amount) || Math.floor(balance / 2);
+      const creditAmountCredits = parseInt(amount) || Math.floor(balance / 2);
       const startPricePerCreditUsdc = parseFloat(draft.startPrice ?? "0");
       const floorPricePerCreditUsdc = parseFloat(draft.floorPrice ?? "0");
       const durationSecs = parseFloat(draft.duration) * 3600;
 
       if (
-        !creditAmountWhole ||
+        !creditAmountCredits ||
         !startPricePerCreditUsdc ||
         !floorPricePerCreditUsdc ||
         !durationSecs
@@ -96,7 +94,7 @@ export default function ListPage() {
       const { instruction } = await createAuctionIx(program, publicKey, {
         auctionSeed,
         creditMint,
-        creditAmountWhole,
+        creditAmountCredits,
         startPricePerCreditUsdc,
         floorPricePerCreditUsdc,
         durationSecs,
@@ -124,10 +122,10 @@ export default function ListPage() {
               List inference · 4 steps · ~2 minutes
             </div>
             <h1 className="text-[32px] font-semibold tracking-[-0.025em] leading-none">
-              Turn unused tokens. API balance or GPU output. Into USDC.
+              Turn unused credits. API balance or GPU output. Into USDC.
             </h1>
             <p className="text-[13.5px] text-text-1 mt-2.5 max-w-[580px] leading-relaxed">
-              Whether you have an OpenAI commit you'll never burn or an
+              Whether you have an OpenAI commit you&apos;ll never burn or an
               H100 sitting idle next week, prove what you have, lock it
               into on-chain escrow, and choose how you want to sell.
               Fixed price or a falling-price Dutch auction.
@@ -138,7 +136,7 @@ export default function ListPage() {
             <StepIndicator steps={STEPS} current={step} />
           </div>
 
-          {submitted ? (
+          {submitted && txSignature ? (
             <SettlementStatus onReset={reset} txSignature={txSignature} />
           ) : (
             <AnimatePresence mode="wait">

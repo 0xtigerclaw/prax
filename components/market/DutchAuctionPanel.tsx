@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { decayAuctions, makeListings } from "@/lib/mock/listings";
 import { useLiveFeed } from "@/lib/hooks/useLiveFeed";
 import { useCountdown } from "@/lib/hooks/useCountdown";
+import { useNow } from "@/lib/hooks/useLiveFeed";
 import { Panel, PanelBody, PanelHeader } from "@/components/ui/Panel";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
@@ -60,9 +61,12 @@ function useLiveAuctions(refresh = 12_000) {
   }, []);
 
   useEffect(() => {
-    fetch();
+    const kick = setTimeout(fetch, 0);
     const id = setInterval(fetch, refresh);
-    return () => clearInterval(id);
+    return () => {
+      clearTimeout(kick);
+      clearInterval(id);
+    };
   }, [fetch, refresh]);
 
   return auctions;
@@ -80,7 +84,7 @@ export function DutchAuctionPanel() {
   );
   const mockAuctions = useLiveFeed(
     mockInitial,
-    (prev) => decayAuctions(prev, 800),
+    decayAuctions,
     800,
   );
   const liveAuctions = useLiveAuctions();
@@ -142,16 +146,16 @@ export function DutchAuctionPanel() {
 function LiveAuctionCard({ live }: { live: LiveAuction }) {
   const { connected, publicKey, login, sendInstructions } = usePraxWallet();
   const [buying, setBuying] = useState(false);
-  const now = Math.floor(Date.now() / 1000);
+  const nowMs = useNow(1000);
+  const now = Math.floor((nowMs || live.account.startTs.toNumber() * 1000) / 1000);
   const a = live.account;
   const expiryMs = (a.startTs.toNumber() + a.durationSecs.toNumber()) * 1000;
   const remaining = useCountdown(expiryMs);
 
   const priceAtoms = currentPrice(a, now);
-  // Price is in USDC micro-atoms per credit micro-atom. Convert to human:
-  // display = priceAtoms / 1e6 * 1000 (per 1K tokens)
-  const displayPrice = (priceAtoms / 1e6) * 1000;
-  const startDisplay = (a.startPrice.toNumber() / 1e6) * 1000;
+  // Price is USDC atoms per whole normalized credit.
+  const displayPrice = priceAtoms / 1e6;
+  const startDisplay = a.startPrice.toNumber() / 1e6;
   const progress = 1 - (priceAtoms - a.floorPrice.toNumber()) /
     Math.max(1, a.startPrice.toNumber() - a.floorPrice.toNumber());
 
@@ -230,7 +234,7 @@ function LiveAuctionCard({ live }: { live: LiveAuction }) {
       </div>
       <div className="flex items-center justify-between mb-2.5 text-[10.5px] mono">
         <span className="text-text-2">Credits</span>
-        <span className="text-text-0">{fmtInt(a.creditAmount.toNumber() / 1e3)}K</span>
+        <span className="text-text-0">{fmtInt(a.creditAmount.toNumber() / 1e6)}</span>
       </div>
       <Button
         variant="primary"

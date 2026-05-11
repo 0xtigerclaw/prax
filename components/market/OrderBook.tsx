@@ -51,7 +51,7 @@ export function OrderBook({ mid, onPick, seed = 21 }: Props) {
       <PanelBody className="flex flex-col relative">
         <div className="grid grid-cols-[1fr_1fr_1fr] px-3 h-6 items-center text-[9.5px] uppercase tracking-[0.08em] text-text-2 mono shrink-0">
           <span>Price (USDC)</span>
-          <span className="text-right">Size (1K)</span>
+          <span className="text-right">Credits</span>
           <span className="text-right">Total</span>
         </div>
 

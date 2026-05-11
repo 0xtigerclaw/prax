@@ -29,28 +29,35 @@ export function CommandPalette() {
   const [idx, setIdx] = useState(0);
   const router = useRouter();
 
+  const setPaletteOpen = (next: boolean) => {
+    if (next) {
+      setQ("");
+      setIdx(0);
+    }
+    setOpen(next);
+  };
+
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const isTyping = (e.target as HTMLElement)?.matches(
         "input,textarea,[contenteditable=true]",
       );
       if ((e.metaKey || e.ctrlKey) && e.key === "k") {
-        e.preventDefault();
-        setOpen((v) => !v);
+      e.preventDefault();
+        setOpen((v) => {
+          if (!v) {
+            setQ("");
+            setIdx(0);
+          }
+          return !v;
+        });
       } else if (!isTyping && e.key === "/" && !open) {
         e.preventDefault();
-        setOpen(true);
+        setPaletteOpen(true);
       }
     };
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
-  }, [open]);
-
-  useEffect(() => {
-    if (open) {
-      setQ("");
-      setIdx(0);
-    }
   }, [open]);
 
   const items: Item[] = [
@@ -98,7 +105,7 @@ export function CommandPalette() {
     : items;
 
   return (
-    <Dialog open={open} onOpenChange={setOpen} width="max-w-lg" className="p-0">
+    <Dialog open={open} onOpenChange={setPaletteOpen} width="max-w-lg" className="p-0">
       <div className="-m-5">
         <div className="relative hairline-b">
           <Search

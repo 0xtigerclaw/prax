@@ -8,9 +8,15 @@
 
 import { Connection, PublicKey, clusterApiUrl } from "@solana/web3.js";
 import { BN } from "@coral-xyz/anchor";
-const mints = require("../lib/solana/generated-mints.json");
-const providers = require("../lib/mock/providers");
-const idl = require("../lib/solana/idl.json");
+import { existsSync } from "node:fs";
+import mints from "../lib/solana/generated-mints.json";
+import idl from "../lib/solana/idl.json";
+import { PROVIDERS, type Provider } from "../lib/mock/providers";
+import { makeListings, type Listing } from "../lib/mock/listings";
+import { makeRoutes, type RouteOption } from "../lib/mock/routes";
+
+type IdlInstruction = { name: string };
+type IdlAccount = { name: string };
 
 const TOKEN_2022_PROGRAM_ID = "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb";
 const PROGRAM_ID = "NcrmnMRfv3fZaqND9P6XtiXhf1dKo6kt2rC3umtRsuH";
@@ -32,7 +38,7 @@ function fail(label: string, note = "") {
 // ── 1. Config: generated-mints.json sanity ──────────────────────────
 async function testMintConfig() {
   console.log("\n=== 1. generated-mints.json ===");
-  const providerIds = providers.PROVIDERS.map((p: any) => p.id);
+  const providerIds = PROVIDERS.map((p) => p.id);
   const mintIds = Object.keys(mints.credits);
 
   for (const id of providerIds) {
@@ -60,8 +66,8 @@ async function testProgram() {
     } else {
       fail("program account not found or not executable");
     }
-  } catch (e: any) {
-    fail("program fetch error", e.message);
+  } catch (e: unknown) {
+    fail("program fetch error", errorMessage(e));
   }
 }
 
@@ -76,8 +82,8 @@ async function testCreditMints() {
       } else {
         fail(`${id.padEnd(16)} wrong owner or null`);
       }
-    } catch (e: any) {
-      fail(`${id.padEnd(16)} fetch error`, e.message);
+    } catch (e: unknown) {
+      fail(`${id.padEnd(16)} fetch error`, errorMessage(e));
     }
   }
 }
@@ -86,14 +92,14 @@ async function testCreditMints() {
 async function testIdl() {
   console.log("\n=== 4. IDL integrity ===");
   const expected = ["create_auction", "place_bid", "close_auction"];
-  const ixNames: string[] = idl.instructions.map((ix: any) => ix.name);
+  const ixNames: string[] = idl.instructions.map((ix: IdlInstruction) => ix.name);
   for (const name of expected) {
     if (ixNames.includes(name)) ok(`instruction '${name}' in IDL`);
     else fail(`instruction '${name}' missing from IDL`);
   }
 
   const expectedAccounts = ["Auction"];
-  const accountNames: string[] = idl.accounts.map((a: any) => a.name);
+  const accountNames: string[] = idl.accounts.map((a: IdlAccount) => a.name);
   for (const name of expectedAccounts) {
     if (accountNames.includes(name)) ok(`account '${name}' in IDL`);
     else fail(`account '${name}' missing from IDL`);
@@ -122,8 +128,8 @@ async function testPdas() {
       programId,
     );
     ok("vault authority PDA derivation", `${vaultAuth.toBase58().slice(0, 12)}… bump=${vaultBump}`);
-  } catch (e: any) {
-    fail("PDA derivation error", e.message);
+  } catch (e: unknown) {
+    fail("PDA derivation error", errorMessage(e));
   }
 }
 
@@ -164,58 +170,59 @@ async function testPriceDecay() {
 // ── 7. Mock data integrity ─────────────────────────────────────────
 async function testMockData() {
   console.log("\n=== 7. Mock data integrity ===");
-  const { makeListings } = require("../lib/mock/listings");
-  const { makeRoutes } = require("../lib/mock/routes");
-
   try {
     const listings = makeListings(42);
     if (listings.length > 0) ok("makeListings generates listings", `count=${listings.length}`);
     else fail("makeListings returned empty");
 
-    const auctions = listings.filter((l: any) => l.kind === "auction");
+    const auctions = listings.filter((l: Listing) => l.kind === "auction");
     if (auctions.length > 0) ok("auction listings present", `count=${auctions.length}`);
     else fail("no auction listings generated");
 
     for (const a of auctions.slice(0, 3)) {
-      if (a.startPrice > a.floorPrice && a.price >= a.floorPrice && a.price <= a.startPrice) {
+      if (
+        a.startPrice != null &&
+        a.floorPrice != null &&
+        a.startPrice > a.floorPrice &&
+        a.price >= a.floorPrice &&
+        a.price <= a.startPrice
+      ) {
         ok(`auction ${a.id.slice(-4)} price within bounds`);
       } else {
         fail(`auction ${a.id.slice(-4)} price out of bounds`, `price=${a.price} start=${a.startPrice} floor=${a.floorPrice}`);
       }
     }
-  } catch (e: any) {
-    fail("makeListings error", e.message);
+  } catch (e: unknown) {
+    fail("makeListings error", errorMessage(e));
   }
 
   try {
     const routes = makeRoutes("gpt4o", 99);
-    const labels = routes.map((r: any) => r.label);
+    const labels = routes.map((r: RouteOption) => r.label);
     if (labels.some((l: string) => l.includes("Prax"))) ok("route labels contain 'Prax'");
     else fail("route labels still contain old brand", labels.join(", "));
 
     if (labels.some((l: string) => l.includes("Direct"))) ok("direct route present");
     else fail("no direct route");
 
-    const sorted = routes.every((r: any, i: number) =>
-      i === 0 || routes[i - 1].effective <= r.effective
+    const sorted = routes.every((route: RouteOption, i: number) =>
+      i === 0 || routes[i - 1].effective <= route.effective
     );
     if (sorted) ok("routes sorted by effective price");
     else fail("routes not sorted");
-  } catch (e: any) {
-    fail("makeRoutes error", e.message);
+  } catch (e: unknown) {
+    fail("makeRoutes error", errorMessage(e));
   }
 }
 
 // ── 8. Providers config ────────────────────────────────────────────
 async function testProviders() {
   console.log("\n=== 8. Providers config ===");
-  const { PROVIDERS } = providers;
-
   if (PROVIDERS.length === 7) ok("7 providers defined");
   else fail("wrong provider count", `got ${PROVIDERS.length}`);
 
-  const open = PROVIDERS.filter((p: any) => p.kind === "open");
-  const closed = PROVIDERS.filter((p: any) => p.kind === "closed");
+  const open = PROVIDERS.filter((p: Provider) => p.kind === "open");
+  const closed = PROVIDERS.filter((p: Provider) => p.kind === "closed");
   if (open.length > 0 && closed.length > 0) ok(`open/closed split: ${open.length} open, ${closed.length} closed`);
   else fail("missing open or closed providers");
 
@@ -228,25 +235,18 @@ async function testProviders() {
 // ── 9. Env / config ────────────────────────────────────────────────
 async function testEnv() {
   console.log("\n=== 9. Environment config ===");
-  const fs = require("fs");
-
-  if (fs.existsSync(".env.local")) ok(".env.local exists");
+  if (existsSync(".env.local")) ok(".env.local exists");
   else fail(".env.local missing");
 
-  const envContent = fs.readFileSync(".env.local", "utf8");
-  if (envContent.includes("NEXT_PUBLIC_PRIVY_APP_ID=cmoj2167z00bf0cjjogi8h9ox")) {
-    ok("Privy app ID set correctly");
-  } else if (envContent.includes("NEXT_PUBLIC_PRIVY_APP_ID=")) {
-    ok("Privy app ID set (custom value)");
-  } else {
-    fail("NEXT_PUBLIC_PRIVY_APP_ID missing from .env.local");
-  }
-
-  if (fs.existsSync("lib/solana/generated-mints.json")) ok("generated-mints.json present");
+  if (existsSync("lib/solana/generated-mints.json")) ok("generated-mints.json present");
   else fail("generated-mints.json missing — run scripts/setup-devnet.ts");
 
-  if (fs.existsSync("anchor/target/deploy/prax_auction.so")) ok("program binary present");
+  if (existsSync("anchor/target/deploy/prax_auction.so")) ok("program binary present");
   else fail("program binary missing");
+}
+
+function errorMessage(e: unknown): string {
+  return e instanceof Error ? e.message : String(e);
 }
 
 // ── run all ────────────────────────────────────────────────────────

@@ -6,7 +6,7 @@ export type RouteOption = {
   kind: "direct" | "secondary" | "auction" | "alt-model";
   label: string;
   provider: Provider;
-  effective: number; // $ per 1K tokens
+  effective: number; // $ per normalized credit
   latencyMs: number;
   reputation: number; // 0..1
   expiresIn?: number; // ms

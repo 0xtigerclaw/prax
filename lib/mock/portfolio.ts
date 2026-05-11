@@ -3,7 +3,7 @@ import { PROVIDERS, type Provider } from "./providers";
 
 export type Holding = {
   provider: Provider;
-  credits: number; // in 1K units
+  credits: number; // normalized credits
   avgCost: number;
   sparkline: number[];
 };

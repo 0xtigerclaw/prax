@@ -27,7 +27,7 @@ export function CreditListingsTable() {
   const initial = useMemo(() => makeListings(19, 30), []);
   const listings = useLiveFeed(
     initial,
-    (prev) => decayAuctions(prev, 1200),
+    decayAuctions,
     1200,
   );
 
@@ -130,7 +130,7 @@ export function CreditListingsTable() {
             align="right"
           />
           <SortHeader
-            label="Price / 1K"
+            label="Price / credit"
             active={sortKey === "price"}
             dir={sortDir}
             onClick={() => toggleSort("price")}

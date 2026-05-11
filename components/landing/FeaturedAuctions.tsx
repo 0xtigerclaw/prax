@@ -9,7 +9,6 @@ import { useCountdown } from "@/lib/hooks/useCountdown";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { fmtPrice, fmtInt, fmtPct, fmtDuration } from "@/lib/format";
-import { cn } from "@/lib/utils";
 import { Gavel, Clock } from "lucide-react";
 
 export function FeaturedAuctions() {
@@ -17,7 +16,7 @@ export function FeaturedAuctions() {
     () => makeListings(11).filter((l) => l.kind === "auction").slice(0, 4),
     [],
   );
-  const auctions = useLiveFeed(initial, (prev) => decayAuctions(prev, 800), 800);
+  const auctions = useLiveFeed(initial, decayAuctions, 800);
 
   return (
     <section className="bg-bg-0">
@@ -86,7 +85,7 @@ function AuctionCard({ listing: a }: { listing: ReturnType<typeof makeListings>[
 
       <div className="mb-3">
         <div className="mono text-[10px] text-text-2 uppercase tracking-wider mb-1">
-          Current price · per 1K
+          Current price · per credit
         </div>
         <div className="flex items-baseline gap-2">
           <span className="mono text-[26px] tracking-tight tabular-nums">
@@ -115,7 +114,7 @@ function AuctionCard({ listing: a }: { listing: ReturnType<typeof makeListings>[
             Credits
           </div>
           <div className="mono text-text-0 mt-0.5">
-            {fmtInt(a.credits)}K
+            {fmtInt(a.credits)}
           </div>
         </div>
         <div>

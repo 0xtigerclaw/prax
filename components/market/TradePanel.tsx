@@ -7,7 +7,8 @@ import { Tab, TabList, Tabs } from "@/components/ui/Tabs";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { Slider } from "@/components/ui/Slider";
-import { useWallet } from "@/lib/hooks/useWallet";
+import { useWalletModal } from "@solana/wallet-adapter-react-ui";
+import { usePraxWallet } from "@/lib/solana/usePraxWallet";
 import { fmtPrice } from "@/lib/format";
 import { ExternalLink, Info, Shield } from "lucide-react";
 
@@ -24,15 +25,18 @@ export function TradePanel({
   const [price, setPrice] = useState<string>("");
   const [size, setSize] = useState<string>("");
   const [pct, setPct] = useState(0);
-  const wallet = useWallet();
+  const wallet = usePraxWallet();
+  const { setVisible } = useWalletModal();
+  const balanceUSDC = wallet.connected ? 8421.53 : 0;
 
   // Prefill from orderbook click
   useEffect(() => {
-    if (prefill?.price) {
+    if (!prefill?.price) return;
+    const id = setTimeout(() => {
       setPrice(prefill.price.toFixed(4));
       if (prefill.side) setMode(prefill.side);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, 0);
+    return () => clearTimeout(id);
   }, [prefill?.price, prefill?.side]);
 
   const effectivePrice = price === "" ? mid : parseFloat(price);
@@ -50,6 +54,7 @@ export function TradePanel({
       toast.error("Connect a wallet to trade", {
         description: "Use the Connect Wallet button in the header.",
       });
+      setVisible(true);
       return;
     }
     if (!size || parseFloat(size) <= 0) {
@@ -57,7 +62,7 @@ export function TradePanel({
       return;
     }
     toast.success(
-      `${mode === "buy" ? "Bought" : mode === "sell" ? "Sold" : "Bid placed on"} ${size}K credits`,
+      `${mode === "buy" ? "Bought" : mode === "sell" ? "Sold" : "Bid placed on"} ${size} credits`,
       {
         description: `Filled at $${fmtPrice(effectivePrice)} · demo only`,
       },
@@ -85,7 +90,7 @@ export function TradePanel({
         }
       />
       <PanelBody className="p-4 flex flex-col gap-3 overflow-y-auto">
-        <Field label="Price · USDC per 1K">
+        <Field label="Price · USDC per credit">
           <Input
             value={price}
             onChange={(e) => setPrice(e.target.value)}
@@ -94,12 +99,12 @@ export function TradePanel({
           />
         </Field>
 
-        <Field label="Size · 1K tokens">
+        <Field label="Size · credits">
           <Input
             value={size}
             onChange={(e) => {
               setSize(e.target.value);
-              const max = wallet.balanceUSDC / effectivePrice;
+              const max = balanceUSDC / effectivePrice;
               const v = parseFloat(e.target.value);
               if (!isNaN(v) && max > 0)
                 setPct(Math.min(100, (v / max) * 100));
@@ -122,7 +127,7 @@ export function TradePanel({
             value={pct}
             onChange={(v) => {
               setPct(v);
-              const max = wallet.balanceUSDC / Math.max(effectivePrice, 1e-6);
+              const max = balanceUSDC / Math.max(effectivePrice, 1e-6);
               setSize(((max * v) / 100).toFixed(2));
             }}
             max={100}
@@ -134,7 +139,7 @@ export function TradePanel({
                 onClick={() => {
                   setPct(p);
                   const max =
-                    wallet.balanceUSDC / Math.max(effectivePrice, 1e-6);
+                    balanceUSDC / Math.max(effectivePrice, 1e-6);
                   setSize(((max * p) / 100).toFixed(2));
                 }}
                 className="flex-1 h-6 rounded-[4px] bg-bg-2 hover:bg-bg-3 border border-line text-[10.5px] mono text-text-1 hover:text-text-0 transition-colors"
@@ -156,7 +161,7 @@ export function TradePanel({
           <Row label="You receive" strong>
             {mode === "sell"
               ? `$${total.toFixed(2)} USDC`
-              : `${size || "0"}K credits`}
+              : `${size || "0"} credits`}
           </Row>
         </div>
 
@@ -176,7 +181,7 @@ export function TradePanel({
         <div className="panel-2 rounded-[6px] p-2.5 text-[11px] text-text-1 flex gap-2 items-start">
           <Shield size={13} className="text-bid shrink-0 mt-0.5" />
           <div>
-            Credits held in Solana escrow{" "}
+            Credits represent 1K provider-normalized billable units and settle through Solana escrow{" "}
             <a
               href="#"
               className="mono text-bid hover:underline inline-flex items-center gap-0.5"
